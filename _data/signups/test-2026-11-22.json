@@ -1,0 +1,35 @@
+{
+  "list_id": "test-2026-11-22",
+  "issue": 1,
+  "last_comment_id": 7090649833,
+  "manual_status": null,
+  "closed_announced": false,
+  "claims": [
+    {
+      "item": "main",
+      "user": "lskatz",
+      "note": "I'll bring a main dish yoyoyo",
+      "comment_id": 7090602804,
+      "at": "2026-11-23T03:16:04+00:00"
+    },
+    {
+      "item": "plates",
+      "user": "lskatz",
+      "note": "I'll bring plates, cups, and napkins",
+      "comment_id": 7090636614,
+      "at": "2026-11-23T03:18:29+00:00"
+    }
+  ],
+  "view": {
+    "status": "open",
+    "closes_display": "end of Tue Dec 15, 2026 (America/New_York)",
+    "issue_url": "https://github.com/lskatz/signupz/issues/1",
+    "counts": {
+      "main": 1,
+      "side": 0,
+      "dessert": 0,
+      "drinks": 0,
+      "plates": 1
+    }
+  }
+}
