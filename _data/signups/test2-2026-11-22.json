@@ -1,0 +1,20 @@
+{
+  "list_id": "test2-2026-11-22",
+  "issue": 2,
+  "last_comment_id": 0,
+  "manual_status": null,
+  "closed_announced": false,
+  "claims": [],
+  "view": {
+    "status": "open",
+    "closes_display": "end of Tue Dec 15, 2026 (America/New_York)",
+    "issue_url": "https://github.com/lskatz/signupz/issues/2",
+    "counts": {
+      "main": 0,
+      "side": 0,
+      "dessert": 0,
+      "drinks": 0,
+      "plates": 0
+    }
+  }
+}
