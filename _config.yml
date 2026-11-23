@@ -1,5 +1,7 @@
-title: Sign-ups
+title: Signupz
 description: Sign up with your GitHub account.
+
+baseurl: /signupz
 
 exclude:
   - signup/
