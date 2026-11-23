@@ -1,0 +1,11 @@
+title: Sign-ups
+description: Sign up with your GitHub account.
+
+exclude:
+  - signup/
+  - tests/
+  - templates/
+  - pyproject.toml
+  - README.md
+  - COMMANDS.md
+  - "*.egg-info"

@@ -1,0 +1,62 @@
+{%- comment -%}
+  Renders one list. Parameters: include.list (from _data/lists), include.state (from _data/signups).
+{%- endcomment -%}
+{%- assign l = include.list -%}
+{%- assign s = include.state -%}
+{%- assign open = false -%}
+{%- if s.view.status == "open" -%}{%- assign open = true -%}{%- endif -%}
+<section class="list" id="list-{{ l.id }}">
+  <h2>{{ l.title }}</h2>
+  <p class="meta">
+    {%- if s.view -%}
+      {%- if open -%}
+        <span class="badge open">Open</span>
+        {%- if s.view.closes_display != "" %} closes {{ s.view.closes_display }}{% endif -%}
+      {%- else -%}
+        <span class="badge closed">Closed</span>
+      {%- endif %}
+      · <a href="{{ s.view.issue_url }}">GitHub issue</a>
+    {%- else -%}
+      <span class="badge pending">Setting up…</span> The bot hasn't created this list's issue yet.
+    {%- endif -%}
+  </p>
+  {%- if l.description %}
+  <div class="description">{{ l.description | markdownify }}</div>
+  {%- endif %}
+
+  <table>
+    <thead>
+      <tr><th scope="col">Item</th><th scope="col">Taken</th><th scope="col">Who</th>{% if open %}<th scope="col"><span class="visually-hidden">Sign up</span></th>{% endif %}</tr>
+    </thead>
+    <tbody>
+    {%- for it in l.items %}
+      {%- assign claims = s.claims | where: "item", it.name -%}
+      {%- assign taken = claims.size | default: 0 -%}
+      {%- assign full = false -%}
+      {%- if it.max and taken >= it.max -%}{%- assign full = true -%}{%- endif %}
+      <tr>
+        <th scope="row">{{ it.label | default: it.name }}{% if it.description %}<small>{{ it.description }}</small>{% endif %}</th>
+        <td class="num">{{ taken }}{% if it.max %} / {{ it.max }}{% endif %}</td>
+        <td>
+          {%- for c in claims -%}
+            <a href="https://github.com/{{ c.user | url_encode }}">{{ c.user | escape }}</a>
+            {%- if c.note != "" %} <span class="note">({{ c.note | escape }})</span>{% endif -%}
+            {%- unless forloop.last %}, {% endunless -%}
+          {%- else -%}<span class="none">—</span>
+          {%- endfor -%}
+        </td>
+        {%- if open %}
+        <td>
+          {%- if full -%}<span class="full">Full</span>
+          {%- else -%}
+          <a class="claim" href="{{ s.view.issue_url }}" target="_blank" rel="noopener"
+             data-cmd="/claim {{ it.name }}">Sign up</a>
+          <code>/claim {{ it.name }}</code>
+          {%- endif -%}
+        </td>
+        {%- endif %}
+      </tr>
+    {%- endfor %}
+    </tbody>
+  </table>
+</section>

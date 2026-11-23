@@ -1,0 +1,100 @@
+# The sign-up bot, and the site deploy that follows it.
+#
+# Every trigger runs the same idempotent catch-up (python -m signup run):
+#   push to main  -> new list YAML gets its issue; YAML edits update the issue
+#   issue comment -> process /commands on sign-up issues
+#   hourly        -> close lists whose date has passed; pick up anything missed
+#
+# One concurrency group serializes all runs, so two people claiming the last
+# slot are handled one after the other. GitHub keeps at most one run waiting
+# and drops older waiting runs; that is safe because each run processes every
+# comment it has not seen yet, not just the one that triggered it.
+
+name: Sign-up bot
+
+on:
+  push:
+    branches: [main]
+  issue_comment:
+    types: [created]
+  schedule:
+    - cron: "7 * * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write # commit _data/signups/*.json
+  issues: write # create issues, comment, react
+  pages: write # deploy the site
+  id-token: write # required by deploy-pages
+
+concurrency:
+  group: signup-bot
+  cancel-in-progress: false
+
+jobs:
+  bot:
+    # Ignore comments on unrelated issues/PRs and the bot's own comments.
+    if: >-
+      github.event_name != 'issue_comment' ||
+      (contains(github.event.issue.labels.*.name, 'signup-list') &&
+       github.event.comment.user.type != 'Bot')
+    runs-on: ubuntu-latest
+    outputs:
+      changed: ${{ steps.run.outputs.changed }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.repository.default_branch }}
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - run: pip install pyyaml
+
+      - id: run
+        name: Run the bot
+        run: python -m signup run
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          # SITE_URL: https://signups.example.org/   # only if you use a custom domain
+
+      - name: Commit sign-up state
+        if: steps.run.outputs.changed == 'true'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add _data/signups
+          git commit -m "Update sign-ups"
+          for attempt in 1 2 3; do
+            git push && exit 0
+            git pull --rebase
+          done
+          exit 1
+
+      - name: Fail if any list file is invalid
+        if: steps.run.outputs.errors != '0'
+        run: |
+          echo "One or more list files are invalid; see the job summary."
+          exit 1
+
+  deploy:
+    needs: bot
+    # Deploy after any change, and after every push (site edits), but skip
+    # quiet hourly runs. Still deploy if only the "invalid list" check failed.
+    if: >-
+      !cancelled() && needs.bot.result != 'skipped' &&
+      (needs.bot.outputs.changed == 'true' || github.event_name != 'schedule')
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.repository.default_branch }}
+      - uses: actions/configure-pages@v5
+      - uses: actions/jekyll-build-pages@v1
+      - uses: actions/upload-pages-artifact@v3
+      - id: deployment
+        uses: actions/deploy-pages@v4

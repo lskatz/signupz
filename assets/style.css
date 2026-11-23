@@ -1,0 +1,60 @@
+:root {
+  --fg: #1f2328;
+  --muted: #59636e;
+  --bg: #ffffff;
+  --line: #d1d9e0;
+  --accent: #0969da;
+  --open: #1a7f37;
+  --closed: #6e7781;
+  --space: 1rem;
+  font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+  color: var(--fg);
+  background: var(--bg);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root { --fg: #e6edf3; --muted: #9198a1; --bg: #0d1117; --line: #3d444d; --accent: #4493f8; --open: #3fb950; }
+}
+
+body { max-width: 52rem; margin: 0 auto; padding: var(--space); line-height: 1.5; }
+a { color: var(--accent); }
+a:focus-visible, summary:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+header h1 { margin-bottom: 0; }
+header h1 a { color: inherit; text-decoration: none; }
+header p, .meta, footer { color: var(--muted); }
+code { font-size: 0.9em; background: color-mix(in srgb, var(--line) 40%, transparent); padding: 0.1em 0.3em; border-radius: 4px; }
+
+.list { border-top: 1px solid var(--line); margin-top: calc(var(--space) * 2); }
+.badge { display: inline-block; padding: 0 0.5em; border-radius: 1em; color: #fff; font-size: 0.85em; font-weight: 600; }
+.badge.open { background: var(--open); }
+.badge.closed { background: var(--closed); }
+.badge.pending { background: var(--accent); }
+
+table { width: 100%; border-collapse: collapse; }
+th, td { text-align: left; padding: 0.5rem; border-bottom: 1px solid var(--line); vertical-align: top; }
+thead th { font-size: 0.85em; color: var(--muted); }
+tbody th small { display: block; font-weight: normal; color: var(--muted); }
+td.num { white-space: nowrap; font-variant-numeric: tabular-nums; }
+.note, .none, .full { color: var(--muted); }
+
+a.claim {
+  display: inline-block; padding: 0.2rem 0.7rem; border-radius: 6px;
+  background: var(--open); color: #fff; text-decoration: none; font-weight: 600;
+}
+a.claim + code { display: block; margin-top: 0.3rem; width: fit-content; }
+.copied { display: block; font-size: 0.85em; color: var(--open); }
+
+details.closed-lists { margin-top: calc(var(--space) * 3); }
+summary { cursor: pointer; font-weight: 600; }
+
+.visually-hidden {
+  position: absolute; width: 1px; height: 1px; overflow: hidden;
+  clip: rect(0 0 0 0); white-space: nowrap;
+}
+
+@media (max-width: 36rem) {
+  thead { display: none; }
+  tr { display: grid; grid-template-columns: 1fr auto; border-bottom: 1px solid var(--line); padding: 0.5rem 0; }
+  th, td { border: 0; padding: 0.15rem 0.5rem; }
+  tbody td:nth-of-type(2), tbody td:nth-of-type(3) { grid-column: 1 / -1; }
+}

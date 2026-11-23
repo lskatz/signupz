@@ -1,0 +1,58 @@
+# ─────────────────────────────────────────────────────────────────────
+# SIGN-UP LIST TEMPLATE
+#
+# 1. Copy this file to  _data/lists/<short-name>.yml
+#    or run            python -m signup new <short-name>
+#    (the command also fills in a fresh id for you).
+# 2. Fill in the fields below. Lines starting with # are comments.
+# 3. Check it:         python -m signup validate
+# 4. Commit and push to main. The bot opens a GitHub issue titled
+#    "<title> [list: <id>]", and people sign up by commenting there.
+#    See COMMANDS.md for the commands.
+# ─────────────────────────────────────────────────────────────────────
+
+# REQUIRED. Unique id for this list: 4-64 letters, digits or dashes.
+# Do not change it after pushing. A new id means a new list and a new issue.
+# Make one with:   uuidgen | tr A-Z a-z
+id: REPLACE-ME
+
+# REQUIRED. Issue title and page heading. No [ or ] characters.
+title: Holiday Potluck
+
+# OPTIONAL. Markdown shown above the items, on the site and in the issue.
+description: |
+  Saturday, Dec 20 at 6 pm. Please bring a serving utensil!
+
+# OPTIONAL. When sign-ups close automatically.
+#   closes: 2026-12-15          closes at the end of that day
+#   closes: 2026-12-15T18:00    closes at 6:00 pm
+# Leave it out to stay open until someone with write access comments /close.
+# A /close or /reopen comment always overrides this date.
+closes: 2026-12-15
+
+# OPTIONAL. Time zone for "closes". Defaults to America/New_York.
+timezone: America/New_York
+
+# REQUIRED. What people can sign up for.
+#   name         REQUIRED  the word people type, as in  /claim dessert
+#                          lowercase letters, digits, - or _ ; unique in this list
+#   label        OPTIONAL  display name (defaults to name)
+#   max          OPTIONAL  how many slots; leave it out for no limit
+#   description  OPTIONAL  a short hint shown under the label
+# One person may claim several items, or the same item more than once.
+items:
+  - name: main
+    label: Main dish
+    max: 2
+  - name: side
+    label: Side dish
+    max: 4
+  - name: dessert
+    label: Dessert
+    max: 3
+  - name: drinks
+    label: Drinks
+    description: Soda, juice or sparkling water
+  - name: plates
+    label: Plates, cups and napkins
+    max: 1
