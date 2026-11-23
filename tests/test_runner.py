@@ -140,3 +140,32 @@ def test_deadline_uses_comment_time_not_run_time(repo, fake_gh, now):
     run(repo, fake_gh, datetime(2026, 12, 16, 5, 7, tzinfo=UTC))  # hourly run, after the deadline
     assert [c["user"] for c in state(repo, lid)["claims"]] == ["early"]
     assert (late, "-1") in fake_gh.reactions
+
+
+def test_replay_after_lost_state_does_not_double_reply(repo, fake_gh, now):
+    """Regression: issue #1. A run posted an error reply, but its state was never
+    committed; the next run replayed the same comments and replied again."""
+    lid = new_list(repo)
+    run(repo, fake_gh, now)
+    path = repo / "_data" / "signups" / f"{lid}.json"
+    committed = path.read_text()
+    fake_gh.user_comment(1, "lskatz", "/claim plates I'll bring plates")
+    fake_gh.user_comment(1, "lskatz", "/claim plates again")  # max is 1
+    run(repo, fake_gh, now)
+    path.write_text(committed)  # that run's commit never landed
+    run(repo, fake_gh, now)
+    replies = [b for b in fake_gh.bot_comments(1) if "is full" in b]
+    assert len(replies) == 1
+    assert [c["item"] for c in state(repo, lid)["claims"]] == ["plates"]
+
+
+def test_close_announcement_not_repeated_after_lost_state(repo, fake_gh, now):
+    lid = new_list(repo)
+    run(repo, fake_gh, now)
+    path = repo / "_data" / "signups" / f"{lid}.json"
+    committed = path.read_text()
+    later = datetime(2026, 12, 16, 6, 0, tzinfo=UTC)
+    run(repo, fake_gh, later)
+    path.write_text(committed)
+    run(repo, fake_gh, later)
+    assert sum("now closed" in b for b in fake_gh.bot_comments(1)) == 1

@@ -7,6 +7,7 @@ run processes whatever is still unprocessed, in comment order.
 
 from __future__ import annotations
 
+import re
 from dataclasses import dataclass, field
 from datetime import datetime
 from pathlib import Path
@@ -57,9 +58,38 @@ def _posted_at(comment: dict, fallback: datetime) -> datetime:
     return datetime.fromisoformat(raw.replace("Z", "+00:00"))
 
 
-def process_comments(lst: SignupList, state: State, gh: GitHubAPI, now: datetime, report: Report) -> None:
+# Hidden markers in the bot's own comments. They make every comment the bot posts
+# idempotent: if a run posts a reply but its state never gets committed (the job is
+# cancelled, the push fails, ...), the next run replays the same comments and must
+# not post the same reply again.
+REPLY_MARK = "<!-- signupz:reply-to={} -->"
+CLOSED_MARK = "<!-- signupz:closed -->"
+_REPLY_RE = re.compile(r"<!-- signupz:reply-to=(\d+) -->")
+
+
+def _posted_marks(comments: list[dict]) -> set[tuple[str, int]]:
+    """("reply-to", <comment id>) for each reply posted, ("closed", <own id>) for each close notice."""
+    marks: set[tuple[str, int]] = set()
+    for c in comments:
+        if _is_bot(c):
+            body = c.get("body") or ""
+            marks.update(("reply-to", int(n)) for n in _REPLY_RE.findall(body))
+            if CLOSED_MARK in body:
+                marks.add(("closed", c["id"]))
+    return marks
+
+
+def process_comments(
+    lst: SignupList,
+    state: State,
+    gh: GitHubAPI,
+    comments: list[dict],
+    marks: set[tuple[str, int]],
+    now: datetime,
+    report: Report,
+) -> None:
     assert state.issue is not None
-    new = sorted((c for c in gh.list_comments(state.issue) if c["id"] > state.last_comment_id), key=lambda c: c["id"])
+    new = sorted((c for c in comments if c["id"] > state.last_comment_id), key=lambda c: c["id"])
     for comment in new:
         state.last_comment_id = comment["id"]
         if _is_bot(comment):
@@ -100,11 +130,12 @@ def process_comments(lst: SignupList, state: State, gh: GitHubAPI, now: datetime
         report.log.append(f"{lst.id} #{comment['id']} by {author}: {oks} ok, {fails} failed")
 
         gh.add_reaction(comment["id"], "+1" if not fails else ("-1" if not oks else "confused"))
-        if fails or replies:
+        if (fails or replies) and ("reply-to", comment["id"]) not in marks:
             body = f"@{author}\n\n" + "\n".join(lines)
             if replies:
                 body += "\n\n" + "\n\n".join(replies)
-            gh.create_comment(state.issue, body)
+            gh.create_comment(state.issue, body + "\n\n" + REPLY_MARK.format(comment["id"]))
+            marks.add(("reply-to", comment["id"]))
 
 
 def sync_list(lst: SignupList, state: State, gh: GitHubAPI, now: datetime, site_url: str, report: Report) -> None:
@@ -118,14 +149,22 @@ def sync_list(lst: SignupList, state: State, gh: GitHubAPI, now: datetime, site_
             report.created_issues.append((lst.id, state.issue))
             report.log.append(f"{lst.id}: created issue #{state.issue}")
 
+    comments = gh.list_comments(state.issue)
+    marks = _posted_marks(comments)
     before = status(lst, state, now)
-    process_comments(lst, state, gh, now, report)
+    process_comments(lst, state, gh, comments, marks, now, report)
     after = status(lst, state, now)
 
-    # Announce closing once, whether it came from the date or /close.
+    # Announce closing once per closing, whether it came from the date or /close.
     if after == CLOSED and not state.closed_announced:
-        why = "by the organizer" if state.manual_status == CLOSED else "because the closing date has passed"
-        gh.create_comment(state.issue, f"🔒 Sign-ups are now closed {why}.\n\n{status_table(lst, state)}")
+        # A close notice posted after the latest /reopen means this closing was already announced.
+        announced = any(kind == "closed" and cid > state.reopen_comment_id for kind, cid in marks)
+        if not announced:
+            why = "by the organizer" if state.manual_status == CLOSED else "because the closing date has passed"
+            gh.create_comment(
+                state.issue,
+                f"🔒 Sign-ups are now closed {why}.\n\n{status_table(lst, state)}\n\n" + CLOSED_MARK,
+            )
         state.closed_announced = True
     elif after == OPEN and before == CLOSED:
         state.closed_announced = False

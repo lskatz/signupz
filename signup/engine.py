@@ -34,6 +34,7 @@ class State:
     last_comment_id: int = 0
     manual_status: str | None = None  # set by /close or /reopen; overrides the date
     closed_announced: bool = False
+    reopen_comment_id: int = 0  # comment id of the latest successful /reopen
     claims: list[Claim] = field(default_factory=list)
     # Derived fields, recomputed every run, for the Jekyll site to render.
     view: dict = field(default_factory=dict)
@@ -91,6 +92,7 @@ def apply(
     if cmd.name == "reopen":
         state.manual_status = OPEN
         state.closed_announced = False
+        state.reopen_comment_id = comment_id
         return Result(True, "sign-ups reopened")
 
     item = lst.item(cmd.item)
