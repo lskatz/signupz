@@ -88,7 +88,7 @@ jobs:
     runs-on: ubuntu-latest
     environment:
       name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
+      url: ${{ steps.deployment.outputs.page_url || steps.retry_deployment.outputs.page_url }}
     steps:
       - uses: actions/checkout@v4
         with:
@@ -97,4 +97,11 @@ jobs:
       - uses: actions/jekyll-build-pages@v1
       - uses: actions/upload-pages-artifact@v3
       - id: deployment
+        uses: actions/deploy-pages@v4
+        continue-on-error: true
+      - name: Wait before retrying deployment
+        if: steps.deployment.outcome == 'failure'
+        run: sleep 10
+      - id: retry_deployment
+        if: steps.deployment.outcome == 'failure'
         uses: actions/deploy-pages@v4
