@@ -14,7 +14,7 @@ name: Sign-up bot
 
 on:
   push:
-    branches: [main]
+    branches: [main,master]
   issue_comment:
     types: [created]
   schedule:
