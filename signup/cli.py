@@ -12,6 +12,7 @@ from pathlib import Path
 
 from .gh import GitHub
 from .model import load_all
+from .pages import PAGES_DIR, write_stub
 from .runner import run
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -81,7 +82,10 @@ def cmd_new(args: argparse.Namespace) -> int:
         print("template has no 'id: REPLACE-ME' line", file=sys.stderr)
         return 1
     dest.write_text(text, encoding="utf-8")
-    print(f"created {dest.relative_to(args.root)}; edit it, then commit and push")
+    list_id = re.search(r"(?m)^id: (.+)$", text).group(1)  # type: ignore[union-attr]
+    write_stub(args.root, list_id)
+    print(f"created {dest.relative_to(args.root)} and {PAGES_DIR}/{list_id}.html")
+    print("edit the .yml, then commit both files and push")
     return 0
 
 

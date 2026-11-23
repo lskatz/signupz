@@ -31,13 +31,20 @@ GitHub Action ──creates──▶ Issue "Holiday Potluck [list: 023f…]"
 
 ```bash
 pip install -e ".[dev]"
-python -m signup new potluck        # copies templates/list.yml with a fresh id
+python -m signup new potluck        # copies templates/list.yml with a fresh id,
+                                    # and adds the list's page, lists/<id>.html
 $EDITOR _data/lists/potluck.yml     # the template has inline instructions
 python -m signup validate
-git add _data/lists/potluck.yml && git commit -m "Add potluck" && git push
+git add _data/lists/potluck.yml lists/ && git commit -m "Add potluck"
+git pull --rebase && git push       # the bot commits too; see below
 ```
 
 Within a minute or two the bot opens the issue and the site shows the list.
+The home page links to every list; each list lives at `/lists/<id>/`.
+
+**Always `git pull --rebase` before you push.** The bot commits sign-ups to the
+same branch, so your push is rejected whenever it has committed since your last
+pull. `git config pull.rebase true` makes plain `git pull` do the right thing.
 Share either link. To change items, the title, or the closing date, edit the YAML
 and push. **Never change `id`.** A new id is a new list.
 
@@ -49,6 +56,7 @@ Commands are in [COMMANDS.md](COMMANDS.md).
 |---|---|---|
 | `_data/lists/*.yml` | List definitions | You |
 | `_data/signups/<id>.json` | Who claimed what, plus a precomputed view for the site | The bot only |
+| `lists/<id>.html` | One stub page per list (renders with `_layouts/signup.html`) | `new`, kept in sync by the bot |
 | `templates/list.yml` | Template with instructions | You |
 | `signup/` | The bot (Python, only depends on PyYAML) | |
 | `_includes/`, `_layouts/`, `index.html`, `assets/` | The Jekyll site | |
@@ -63,6 +71,8 @@ Commands are in [COMMANDS.md](COMMANDS.md).
   pile up; the next run picks up those comments. Re-running is always safe.
 - **Fair deadlines.** A claim counts if its comment was *posted* before
   `closes`, even if the bot processes it later.
+- **Replies are idempotent.** Each bot reply carries a hidden marker naming the
+  comment it answers, so a replayed comment never gets a second reply.
 - **One writer.** Only the bot writes `_data/signups/`. Comments are requests;
   the JSON is the record. If a state file is lost, the bot re-links the
   existing issue by the `[list: <id>]` in its title, and doesn't open a duplicate.

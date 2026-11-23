@@ -1,0 +1,25 @@
+{%- comment -%}
+  One row on the index page. Parameters: include.list, include.state.
+{%- endcomment -%}
+{%- assign l = include.list -%}
+{%- assign s = include.state -%}
+{%- assign taken = s.claims.size | default: 0 -%}
+{%- assign slots = 0 -%}
+{%- assign unlimited = false -%}
+{%- for it in l.items -%}
+  {%- if it.max -%}{%- assign slots = slots | plus: it.max -%}{%- else -%}{%- assign unlimited = true -%}{%- endif -%}
+{%- endfor %}
+<li class="card">
+  <a class="card-title" href="{{ '/lists/' | append: l.id | append: '/' | relative_url }}">{{ l.title }}</a>
+  <span class="meta">
+    {%- if s.view.status == "open" -%}
+      <span class="badge open">Open</span>
+      {%- if s.view.closes_display != "" %} closes {{ s.view.closes_display }}{% endif -%}
+    {%- elsif s.view.status == "closed" -%}
+      <span class="badge closed">Closed</span>
+    {%- else -%}
+      <span class="badge pending">Setting up…</span>
+    {%- endif %}
+    · {% if unlimited %}{{ taken }} signed up{% else %}{{ taken }} of {{ slots }} slots filled{% endif %}
+  </span>
+</li>

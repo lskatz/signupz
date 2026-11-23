@@ -3,7 +3,7 @@
 #
 # 1. Copy this file to  _data/lists/<short-name>.yml
 #    or run            python -m signup new <short-name>
-#    (the command also fills in a fresh id for you).
+#    (the command also fills in a fresh id and adds the list's web page).
 # 2. Fill in the fields below. Lines starting with # are comments.
 # 3. Check it:         python -m signup validate
 # 4. Commit and push to main. The bot opens a GitHub issue titled

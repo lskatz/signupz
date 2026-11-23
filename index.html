@@ -1,23 +1,24 @@
 ---
 layout: default
-title: Sign-ups
 ---
-<p class="how">
-  To sign up, open a list's GitHub issue and comment <code>/claim &lt;item&gt; [note]</code>,
-  for example <code>/claim dessert pecan pie</code>. The <strong>Sign up</strong> button copies the
-  command for you and opens the issue. You need a GitHub account.
-</p>
+<p class="how">Pick a list to see what's still needed.</p>
 
-{%- assign shown = 0 -%}
+{%- assign open_count = 0 -%}
+{%- capture open_html -%}
 {%- for pair in site.data.lists -%}
   {%- assign l = pair[1] -%}
   {%- assign s = site.data.signups[l.id] -%}
   {%- unless s.view.status == "closed" -%}
-    {%- include signup-list.html list=l state=s -%}
-    {%- assign shown = shown | plus: 1 -%}
+    {%- include signup-card.html list=l state=s -%}
+    {%- assign open_count = open_count | plus: 1 -%}
   {%- endunless -%}
 {%- endfor -%}
-{%- if shown == 0 %}
+{%- endcapture -%}
+
+<h2>Open</h2>
+{%- if open_count > 0 %}
+<ul class="cards">{{ open_html }}</ul>
+{%- else %}
 <p>No open sign-up lists right now.</p>
 {%- endif %}
 
@@ -25,13 +26,13 @@ title: Sign-ups
 {%- for pair in site.data.lists -%}
   {%- assign l = pair[1] -%}
   {%- assign s = site.data.signups[l.id] -%}
-  {%- if s.view.status == "closed" -%}{%- include signup-list.html list=l state=s -%}{%- endif -%}
+  {%- if s.view.status == "closed" -%}{%- include signup-card.html list=l state=s -%}{%- endif -%}
 {%- endfor -%}
 {%- endcapture -%}
 {%- assign closed_html = closed_html | strip -%}
 {%- if closed_html != "" %}
 <details class="closed-lists">
   <summary>Closed lists</summary>
-  {{ closed_html }}
+  <ul class="cards">{{ closed_html }}</ul>
 </details>
 {%- endif %}

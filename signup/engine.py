@@ -203,7 +203,7 @@ def issue_body(lst: SignupList, state: State, now: datetime, site_url: str = "")
     ]
     footer = f"<sub>list id `{lst.id}`"
     if site_url:
-        footer = f"[View on the website]({site_url}#list-{lst.id})\n\n" + footer
+        footer = f"[View on the website]({site_url}lists/{lst.id}/)\n\n" + footer
     parts.append(footer + "</sub>")
     return "\n".join(parts) + "\n"
 

@@ -1,0 +1,22 @@
+---
+layout: default
+---
+{%- comment -%} One list's page. The stub in lists/<id>.html only sets page.list_id. {%- endcomment -%}
+{%- assign l = nil -%}
+{%- for pair in site.data.lists -%}
+  {%- if pair[1].id == page.list_id -%}{%- assign l = pair[1] -%}{%- endif -%}
+{%- endfor -%}
+{%- assign s = site.data.signups[page.list_id] -%}
+
+<p class="back"><a href="{{ '/' | relative_url }}">← All sign-ups</a></p>
+
+{%- if l %}
+<p class="how">
+  To sign up, comment <code>/claim &lt;item&gt; [note]</code> on this list's GitHub issue,
+  for example <code>/claim dessert pecan pie</code>. The <strong>Sign up</strong> button copies the
+  command for you and opens the issue. You need a GitHub account.
+</p>
+{% include signup-list.html list=l state=s %}
+{%- else %}
+<p>This sign-up list no longer exists.</p>
+{%- endif %}

@@ -16,6 +16,7 @@ from . import commands as cmds
 from .engine import CLOSED, OPEN, State, apply, build_view, issue_body, status, status_table
 from .gh import GitHubAPI
 from .model import SignupList, load_all
+from .pages import sync_pages
 
 HELP_TEXT = """\
 **Sign-up commands.** Put each command on its own line in a comment on this issue.
@@ -37,13 +38,14 @@ Item names are the words in the **Command name** column of the issue. Full docs:
 @dataclass
 class Report:
     changed_lists: list[str] = field(default_factory=list)
+    changed_pages: list[str] = field(default_factory=list)
     created_issues: list[tuple[str, int]] = field(default_factory=list)
     errors: list[str] = field(default_factory=list)
     log: list[str] = field(default_factory=list)
 
     @property
     def changed(self) -> bool:
-        return bool(self.changed_lists)
+        return bool(self.changed_lists or self.changed_pages)
 
 
 def _is_bot(comment: dict) -> bool:
@@ -204,4 +206,5 @@ def run(root: Path, gh: GitHubAPI, now: datetime, site_url: str = "") -> Report:
         if new != original:
             path.write_text(new, encoding="utf-8")
             report.changed_lists.append(lst.id)
+    report.changed_pages = sync_pages(root, lists)
     return report

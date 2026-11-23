@@ -22,7 +22,7 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: write # commit _data/signups/*.json
+  contents: write # commit _data/signups/*.json and lists/*.html
   issues: write # create issues, comment, react
   pages: write # deploy the site
   id-token: write # required by deploy-pages
@@ -64,7 +64,7 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add _data/signups
+          git add -A _data/signups lists
           git commit -m "Update sign-ups"
           for attempt in 1 2 3; do
             git push && exit 0

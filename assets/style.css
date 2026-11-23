@@ -58,3 +58,10 @@ summary { cursor: pointer; font-weight: 600; }
   th, td { border: 0; padding: 0.15rem 0.5rem; }
   tbody td:nth-of-type(2), tbody td:nth-of-type(3) { grid-column: 1 / -1; }
 }
+
+.back { margin-bottom: 0; }
+.cards { list-style: none; padding: 0; margin: 0; display: grid; gap: 0.75rem; }
+.card { border: 1px solid var(--line); border-radius: 8px; padding: 0.75rem 1rem; }
+.card-title { display: block; font-size: 1.15rem; font-weight: 600; text-decoration: none; }
+.card-title:hover { text-decoration: underline; }
+.card .meta { font-size: 0.9rem; }
