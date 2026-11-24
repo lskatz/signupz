@@ -60,7 +60,8 @@ On a request issue, approvers can use:
 
 Approvers are people with write access to the repository and the usernames under
 `signupz: approvers:` in `_config.yml`. A request opened by an approver is approved
-automatically. Only `/approve` or `/reject` posted after the bot's latest preview
+automatically, unless `_config.yml` sets `auto_approve_own: false`; then it waits for
+`/approve` like any other (the requester may approve their own). Only `/approve` or `/reject` posted after the bot's latest preview
 count, so an approval always applies to what the approver saw.
 
 The new list's id is its title plus the time the request was opened, in ISO 8601

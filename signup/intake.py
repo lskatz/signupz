@@ -37,13 +37,18 @@ _YAML_BLOCK_RE = re.compile(r"~~~~yaml\n(.*?)\n~~~~", re.S)
 _COMMAND_RE = re.compile(r"^/(approve|reject)\b[ \t]*(.*)$", re.I | re.M)
 
 
-def load_approvers(root: Path) -> set[str]:
+def load_settings(root: Path) -> tuple[set[str], bool]:
+    """(approvers, auto_approve_own) from the `signupz:` section of _config.yml."""
     path = root / "_config.yml"
-    if not path.exists():
-        return set()
-    cfg = yaml.safe_load(path.read_text(encoding="utf-8")) or {}
-    names = ((cfg.get("signupz") or {}).get("approvers")) or []
-    return {str(n).lstrip("@").lower() for n in names if n}
+    cfg = (yaml.safe_load(path.read_text(encoding="utf-8")) or {}) if path.exists() else {}
+    section = cfg.get("signupz") or {}
+    names = section.get("approvers") or []
+    auto = section.get("auto_approve_own", True)
+    return {str(n).lstrip("@").lower() for n in names if n}, auto is not False
+
+
+def load_approvers(root: Path) -> set[str]:
+    return load_settings(root)[0]
 
 
 @dataclass
@@ -54,6 +59,7 @@ class Intake:
     taken_ids: set[str]
     site_url: str
     log: list[str]
+    auto_approve_own: bool = True
 
     def is_approver(self, user: str) -> bool:
         return user.lower() in self.approvers or self.gh.can_write(user)
@@ -150,7 +156,7 @@ def handle_request(ctx: Intake, issue: dict, now: datetime) -> str | None:
             )
         else:
             text = f"@{author} thanks! Here's the list this request will create:\n\n{_preview(draft)}\n\n"
-            if ctx.is_approver(author):
+            if ctx.auto_approve_own and ctx.is_approver(author):
                 text += "You're an approver, so I'm creating it now."
             else:
                 text += (
@@ -163,7 +169,8 @@ def handle_request(ctx: Intake, issue: dict, now: datetime) -> str | None:
 
     # Decide: auto-approve the approver's own request, or look for /approve and /reject
     # posted after the latest check (older ones were about earlier content).
-    approved_by = author if not draft.problems and ctx.is_approver(author) else None
+    auto = ctx.auto_approve_own and not draft.problems and ctx.is_approver(author)
+    approved_by = author if auto else None
     if approved_by is None:
         for c in comments:
             if c["id"] <= check_id or is_bot(c):
@@ -228,7 +235,8 @@ def process_requests(
 ) -> list[str]:
     gh.ensure_label(REQUEST_LABEL, "fbca04", "New sign-up list, waiting for /approve")
     gh.ensure_label(LIST_LABEL, "0e8a16", "Managed by the sign-up bot")
-    ctx = Intake(root, gh, load_approvers(root), taken_ids, site_url, log)
+    approvers, auto_approve_own = load_settings(root)
+    ctx = Intake(root, gh, approvers, taken_ids, site_url, log, auto_approve_own)
     created: list[str] = []
     for issue in sorted(gh.list_issues(REQUEST_LABEL), key=lambda i: i["number"]):
         try:

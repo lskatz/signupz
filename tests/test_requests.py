@@ -208,3 +208,22 @@ def test_two_requests_same_title_same_minute_get_distinct_ids(site, fake_gh):
     assert r.created_lists == [LIST_ID, LIST_ID + "-2"]
     assert fake_gh.issues[b]["title"].endswith(f"[list: {LIST_ID}-2]")
     assert a != b
+
+
+def test_auto_approve_own_can_be_turned_off(site, fake_gh):
+    (site / "_config.yml").write_text("signupz:\n  approvers: [helper]\n  auto_approve_own: false\n")
+    n = request(fake_gh, who="helper")
+    run(site, fake_gh, NOW)
+    assert files(site) == [] and "`/approve`" in fake_gh.bot_comments(n)[0]
+    fake_gh.user_comment(n, "helper", "/approve")  # approving your own request is fine
+    run(site, fake_gh, NOW)
+    assert files(site) == [f"{LIST_ID}.yml"]
+
+
+def test_auto_approve_own_defaults_to_true(site):
+    from signup.intake import load_settings
+
+    (site / "_config.yml").write_text("signupz:\n  approvers: ['@Helper']\n")
+    assert load_settings(site) == ({"helper"}, True)
+    (site / "_config.yml").write_text("title: x\n")
+    assert load_settings(site) == (set(), True)

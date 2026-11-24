@@ -10,6 +10,9 @@ signupz:
   approvers:
     - lskatz
     # - <Samantha's GitHub username>
+  # true: a request opened by an approver is created right away.
+  # false: every request waits for an /approve comment, even an approver's own.
+  auto_approve_own: false
 
 exclude:
   - signup/
