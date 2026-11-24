@@ -1,0 +1,25 @@
+{
+  "list_id": "holiday-potluck-2026-11-23T21-56",
+  "issue": 4,
+  "last_comment_id": 7120620129,
+  "manual_status": null,
+  "closed_announced": false,
+  "reopen_comment_id": 0,
+  "request": "### Description\n\nBring yo self treat yo self\n\n### Items\n\n- Main dish (2)\n- Side dish (4)\n- Dessert (3): store-bought is fine\n- Drinks\n- Plates, cups and napkins (1)\n- chairs (22)\n- yoself\n- dogs (100)\n\n\n### Sign-ups close\n\n_No response_\n\n### Time zone\n\nAmerica/New_York",
+  "claims": [],
+  "view": {
+    "status": "open",
+    "closes_display": "",
+    "issue_url": "https://github.com/lskatz/signupz/issues/4",
+    "counts": {
+      "main-dish": 0,
+      "side-dish": 0,
+      "dessert": 0,
+      "drinks": 0,
+      "plates-cups-and-napkins": 0,
+      "chairs": 0,
+      "yoself": 0,
+      "dogs": 0
+    }
+  }
+}

@@ -1,0 +1,29 @@
+# Created from issue #4 by the signupz bot. Edit freely, but never change `id`.
+id: holiday-potluck-2026-11-23T21-56
+title: Holiday Potluck
+description: Bring yo self treat yo self
+timezone: America/New_York
+items:
+- name: main-dish
+  label: Main dish
+  max: 2
+- name: side-dish
+  label: Side dish
+  max: 4
+- name: dessert
+  label: Dessert
+  max: 3
+  description: store-bought is fine
+- name: drinks
+  label: Drinks
+- name: plates-cups-and-napkins
+  label: Plates, cups and napkins
+  max: 1
+- name: chairs
+  label: chairs
+  max: 22
+- name: yoself
+  label: yoself
+- name: dogs
+  label: dogs
+  max: 100
