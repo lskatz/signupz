@@ -65,3 +65,10 @@ summary { cursor: pointer; font-weight: 600; }
 .card-title { display: block; font-size: 1.15rem; font-weight: 600; text-decoration: none; }
 .card-title:hover { text-decoration: underline; }
 .card .meta { font-size: 0.9rem; }
+
+a.new-list {
+  display: inline-block; padding: 0.35rem 0.9rem; border-radius: 6px;
+  border: 1px solid var(--accent); color: var(--accent); text-decoration: none; font-weight: 600;
+}
+a.new-list:hover { background: color-mix(in srgb, var(--accent) 10%, transparent); }
+a.new-list + small { display: block; color: var(--muted); margin-top: 0.3rem; }

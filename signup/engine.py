@@ -35,6 +35,7 @@ class State:
     manual_status: str | None = None  # set by /close or /reopen; overrides the date
     closed_announced: bool = False
     reopen_comment_id: int = 0  # comment id of the latest successful /reopen
+    request: str = ""  # original "New sign-up list" form text, if the list came from an issue
     claims: list[Claim] = field(default_factory=list)
     # Derived fields, recomputed every run, for the Jekyll site to render.
     view: dict = field(default_factory=dict)
@@ -201,6 +202,8 @@ def issue_body(lst: SignupList, state: State, now: datetime, site_url: str = "")
         status_table(lst, state),
         "",
     ]
+    if state.request:
+        parts += ["<details><summary>Original request</summary>", "", state.request, "", "</details>", ""]
     footer = f"<sub>list id `{lst.id}`"
     if site_url:
         footer = f"[View on the website]({site_url}lists/{lst.id}/)\n\n" + footer

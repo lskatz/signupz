@@ -34,6 +34,38 @@ You sign up by commenting on a list's GitHub issue. Each list has an issue title
 
 To add, rename or resize items, edit the list's YAML file and push. Don't change the `id`.
 
+## New-list requests
+
+Anyone can ask for a new list with the **+ Start a new list** link on the site, which
+opens the *New sign-up list* form on GitHub. The issue title is the list's title, and
+items are a Markdown list, one per line:
+
+```
+- Main dish (2)
+- Dessert (3): store-bought is fine
+- Drinks
+- Plates, cups and napkins `plates` (1)
+```
+
+`(3)` is the maximum (leave it out for no limit), text after `: ` is a hint, and a word in
+backticks sets the command name (otherwise it comes from the label: `main-dish`).
+
+The bot replies with a preview, or with what to fix; editing the issue re-checks it.
+On a request issue, approvers can use:
+
+| Command | What it does |
+|---|---|
+| `/approve` | Create the list. This issue becomes its sign-up issue. |
+| `/reject [reason]` | Close the request. |
+
+Approvers are people with write access to the repository and the usernames under
+`signupz: approvers:` in `_config.yml`. A request opened by an approver is approved
+automatically. Only `/approve` or `/reject` posted after the bot's latest preview
+count, so an approval always applies to what the approver saw.
+
+The new list's id is its title plus the time the request was opened, in ISO 8601
+with dashes instead of colons: `holiday-potluck-2026-11-23T21-24`.
+
 ## When a list closes
 
 A list closes when its `closes` date passes (the bot checks every hour and on every

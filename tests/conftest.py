@@ -18,6 +18,7 @@ class FakeGitHub:
         self.comments: dict[int, list[dict]] = {}
         self.reactions: list[tuple[int, str]] = []
         self.writers = {w.lower() for w in (writers or {"owner"})}
+        self.labels_created: set[str] = set()
         self._num = itertools.count(1)
         self._cid = itertools.count(1000)
 
@@ -28,6 +29,21 @@ class FakeGitHub:
             {"id": cid, "body": body, "user": {"login": login, "type": "Bot" if bot else "User"}}
         )
         return cid
+
+    def user_issue(
+        self, login: str, title: str, body: str, labels=("new-list-request",), created_at: str = "2026-11-24T02:24:10Z"
+    ) -> int:
+        n = next(self._num)
+        self.issues[n] = {
+            "number": n,
+            "title": title,
+            "body": body,
+            "state": "open",
+            "labels": list(labels),
+            "user": {"login": login, "type": "User"},
+            "created_at": created_at,
+        }
+        return n
 
     def bot_comments(self, issue: int) -> list[str]:
         return [c["body"] for c in self.comments.get(issue, []) if c["user"]["type"] == "Bot"]
@@ -40,7 +56,15 @@ class FakeGitHub:
 
     def create_issue(self, title, body):
         n = next(self._num)
-        self.issues[n] = {"number": n, "title": title, "body": body, "state": "open"}
+        self.issues[n] = {
+            "number": n,
+            "title": title,
+            "body": body,
+            "state": "open",
+            "labels": ["signup-list"],
+            "user": {"login": "github-actions[bot]", "type": "Bot"},
+            "created_at": "2026-11-23T00:00:00Z",
+        }
         return n
 
     def get_issue(self, number):
@@ -53,10 +77,16 @@ class FakeGitHub:
         return list(self.comments.get(number, []))
 
     def create_comment(self, number, body):
-        self.user_comment(number, "github-actions[bot]", body, bot=True)
+        return self.user_comment(number, "github-actions[bot]", body, bot=True)
 
     def add_reaction(self, comment_id, content):
         self.reactions.append((comment_id, content))
+
+    def list_issues(self, label):
+        return [dict(i) for i in self.issues.values() if i["state"] == "open" and label in i.get("labels", [])]
+
+    def ensure_label(self, name, color, description):
+        self.labels_created.add(name)
 
     def can_write(self, user):
         return user.lower() in self.writers

@@ -15,6 +15,8 @@ from pathlib import Path
 from . import commands as cmds
 from .engine import CLOSED, OPEN, State, apply, build_view, issue_body, status, status_table
 from .gh import GitHubAPI
+from .gh import is_bot as _is_bot
+from .intake import process_requests
 from .model import SignupList, load_all
 from .pages import sync_pages
 
@@ -39,18 +41,14 @@ Item names are the words in the **Command name** column of the issue. Full docs:
 class Report:
     changed_lists: list[str] = field(default_factory=list)
     changed_pages: list[str] = field(default_factory=list)
+    created_lists: list[str] = field(default_factory=list)  # from approved requests
     created_issues: list[tuple[str, int]] = field(default_factory=list)
     errors: list[str] = field(default_factory=list)
     log: list[str] = field(default_factory=list)
 
     @property
     def changed(self) -> bool:
-        return bool(self.changed_lists or self.changed_pages)
-
-
-def _is_bot(comment: dict) -> bool:
-    user = comment.get("user") or {}
-    return user.get("type") == "Bot" or str(user.get("login", "")).endswith("[bot]")
+        return bool(self.changed_lists or self.changed_pages or self.created_lists)
 
 
 def _posted_at(comment: dict, fallback: datetime) -> datetime:
@@ -190,6 +188,10 @@ def sync_list(lst: SignupList, state: State, gh: GitHubAPI, now: datetime, site_
 def run(root: Path, gh: GitHubAPI, now: datetime, site_url: str = "") -> Report:
     report = Report()
     lists, errors = load_all(root / "_data" / "lists", root)
+    taken = {lst.id for lst in lists}
+    report.created_lists = process_requests(root, gh, now, taken, site_url, report.log, report.errors)
+    if report.created_lists:
+        lists, errors = load_all(root / "_data" / "lists", root)
     report.errors.extend(errors)
     state_dir = root / "_data" / "signups"
     state_dir.mkdir(parents=True, exist_ok=True)

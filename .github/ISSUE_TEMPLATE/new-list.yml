@@ -1,0 +1,57 @@
+# The "New sign-up list" form. The bot (signup/intake.py) reads these fields by
+# their labels, so keep the labels "Description", "Items", "Sign-ups close" and
+# "Time zone" exactly as they are.
+name: New sign-up list
+description: Ask for a new sign-up list. An organizer approves it, then people sign up right here.
+labels: [new-list-request]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        **Type the list's name as the issue title above**, for example *Holiday Potluck*.
+
+        After you submit, the bot replies with a preview, or with what to fix.
+        Once an organizer comments `/approve`, this issue becomes the sign-up sheet.
+  - type: textarea
+    id: description
+    attributes:
+      label: Description
+      description: When and where, what to bring, anything people should know. Markdown works.
+      placeholder: Saturday, Dec 20 at 6 pm at our place. Please bring a serving utensil!
+  - type: textarea
+    id: items
+    attributes:
+      label: Items
+      description: |
+        One item per line, as a list. `(3)` sets how many people can take it; leave it out for no limit.
+        Add a hint after a colon. Use the Preview tab to check it.
+      value: |
+        - Main dish (2)
+        - Side dish (4)
+        - Dessert (3): store-bought is fine
+        - Drinks
+        - Plates, cups and napkins (1)
+    validations:
+      required: true
+  - type: input
+    id: closes
+    attributes:
+      label: Sign-ups close
+      description: Optional. A date closes at the end of that day. Leave it empty to close by hand with `/close`.
+      placeholder: 2026-12-15 or 2026-12-15 18:00
+  - type: dropdown
+    id: timezone
+    attributes:
+      label: Time zone
+      options:
+        - America/New_York
+        - America/Chicago
+        - America/Denver
+        - America/Phoenix
+        - America/Los_Angeles
+        - America/Anchorage
+        - Pacific/Honolulu
+        - UTC
+      default: 0
+    validations:
+      required: true

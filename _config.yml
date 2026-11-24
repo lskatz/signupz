@@ -2,6 +2,14 @@ title: Signupz
 description: Sign up with your GitHub account.
 
 baseurl: /signupz
+repository: lskatz/signupz
+
+signupz:
+  # GitHub usernames who may /approve new-list requests. Anyone with write
+  # access to this repository can approve too, whether or not they're listed.
+  approvers:
+    - lskatz
+    # - <Samantha's GitHub username>
 
 exclude:
   - signup/

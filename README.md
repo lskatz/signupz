@@ -48,6 +48,18 @@ pull. `git config pull.rebase true` makes plain `git pull` do the right thing.
 Share either link. To change items, the title, or the closing date, edit the YAML
 and push. **Never change `id`.** A new id is a new list.
 
+### Or: let anyone request a list
+
+The site's **+ Start a new list** link opens a GitHub issue form. The bot checks
+the request and replies with a preview; an approver comments `/approve`, and the
+bot writes the YAML and page, and turns that issue into the list's sign-up issue.
+Approvers are anyone with write access plus `signupz: approvers:` in `_config.yml`.
+Details are in [COMMANDS.md](COMMANDS.md#new-list-requests).
+
+The bot creates the `new-list-request` label on its first run. The form can only
+apply a label that already exists, so let the bot run once (any push will do)
+before the first request.
+
 Commands are in [COMMANDS.md](COMMANDS.md).
 
 ## Layout
@@ -58,6 +70,7 @@ Commands are in [COMMANDS.md](COMMANDS.md).
 | `_data/signups/<id>.json` | Who claimed what, plus a precomputed view for the site | The bot only |
 | `lists/<id>.html` | One stub page per list (renders with `_layouts/signup.html`) | `new`, kept in sync by the bot |
 | `templates/list.yml` | Template with instructions | You |
+| `.github/ISSUE_TEMPLATE/new-list.yml` | The "New sign-up list" form | You |
 | `signup/` | The bot (Python, only depends on PyYAML) | |
 | `_includes/`, `_layouts/`, `index.html`, `assets/` | The Jekyll site | |
 | `.github/workflows/signup.yml` | Bot and deploy | |
